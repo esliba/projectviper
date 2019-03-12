@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.438
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectViper", "ProjectViper\ProjectViper.csproj", "{CCE02F5E-4212-4F8D-A22F-7E146411BE7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViperUI", "ViperUI\ViperUI.csproj", "{4BB7AB95-FF9E-4BA4-ADD9-580130748C49}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CCE02F5E-4212-4F8D-A22F-7E146411BE7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCE02F5E-4212-4F8D-A22F-7E146411BE7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCE02F5E-4212-4F8D-A22F-7E146411BE7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCE02F5E-4212-4F8D-A22F-7E146411BE7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BB7AB95-FF9E-4BA4-ADD9-580130748C49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BB7AB95-FF9E-4BA4-ADD9-580130748C49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BB7AB95-FF9E-4BA4-ADD9-580130748C49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BB7AB95-FF9E-4BA4-ADD9-580130748C49}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4B9301F3-97DC-44D5-94E9-B28A60E1D4BF}
+	EndGlobalSection
+EndGlobal
