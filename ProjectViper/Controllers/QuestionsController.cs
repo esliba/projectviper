@@ -50,12 +50,12 @@ namespace ProjectViper.Controllers
 
         // GET: api/Questions?id=1
         [HttpGet]
-        public async Task<IActionResult> GetQuestion([FromQuery] int id)
+        public ActionResult<QuestionDTO> GetQuestion([FromQuery] int id)
         {
             QuestionDTO question = new QuestionDTO();
             try
             {
-                question = await _questionsService.GetQuestionById(id);
+                question = _questionsService.GetQuestionById(id);
             }
             catch (CustomErrorException e)
             {
@@ -70,6 +70,48 @@ namespace ProjectViper.Controllers
                 return NotFound();
             }
             return Ok(question);
+        }
+
+        // GET: api/Questions/qcontainer?qContainerId=1
+        [HttpGet]
+        [Route("qcontainer")]
+        public ActionResult<IEnumerable<QuestionDTO>> GetQuestionByQContainerId([FromQuery] int qContainerId)
+        {
+            IEnumerable<QuestionDTO> questions = new List<QuestionDTO>();
+            try
+            {
+                questions = _questionsService.GetQuestionsByQContainerId(qContainerId);
+            }
+            catch (CustomErrorException e)
+            {
+                return BadRequest(new CustomMessage
+                {
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
+            }
+            return Ok(questions);
+        }
+
+        // GET: api/Questions/options?questionId=1
+        [HttpGet]
+        [Route("options")]
+        public ActionResult<IEnumerable<QOptionDTO>> GetOptionsForQuestion(int questionId)
+        {
+            IEnumerable<QOptionDTO> options = new List<QOptionDTO>();
+            try
+            {
+                options = _questionsService.GetOptionsForQuestion(questionId);
+            }
+            catch (CustomErrorException e)
+            {
+                return BadRequest(new CustomMessage
+                {
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
+            }
+            return Ok(options);
         }
     }
 }

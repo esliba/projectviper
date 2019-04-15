@@ -50,12 +50,12 @@ namespace ProjectViper.Controllers
 
         // GET: api/Boards?id=1
         [HttpGet]
-        public async Task<IActionResult> GetBoard([FromQuery] int id)
+        public ActionResult<BoardDTO> GetBoard([FromQuery] int id)
         {
             BoardDTO board = new BoardDTO();
             try
             {
-                board = await _boardsService.GetBoardById(id);
+                board = _boardsService.GetBoardById(id);
             }
             catch (CustomErrorException e)
             {

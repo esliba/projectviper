@@ -90,7 +90,7 @@ namespace ProjectViper.Models
 
                 entity.Property(e => e.QOptionId).HasColumnName("QOptionId");
 
-                entity.Property(e => e.Question1)
+                entity.Property(e => e._Question)
                     .IsRequired()
                     .HasColumnName("Question")
                     .HasMaxLength(100)

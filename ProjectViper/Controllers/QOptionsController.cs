@@ -49,13 +49,13 @@ namespace ProjectViper.Controllers
         }
 
         // GET: api/QOptions?id=1
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetQOption([FromQuery] int id)
+        [HttpGet]
+        public ActionResult<QOptionDTO> GetQOption([FromQuery] int id)
         {
             QOptionDTO qOption = new QOptionDTO();
             try
             {
-                qOption = await _qOptionsService.GetQOptionById(id);
+                qOption = _qOptionsService.GetQOptionById(id);
             }
             catch (CustomErrorException e)
             {

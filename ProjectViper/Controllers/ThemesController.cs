@@ -50,12 +50,12 @@ namespace ProjectViper.Controllers
 
         // GET: api/Themes?id=1
         [HttpGet]
-        public async Task<IActionResult> GetTheme([FromQuery] int id)
+        public ActionResult<ThemeDTO> GetTheme([FromQuery] int id)
         {
             ThemeDTO theme = new ThemeDTO();
             try
             {
-                theme = await _themesService.GetThemeById(id);
+                theme = _themesService.GetThemeById(id);
             }
             catch (CustomErrorException e)
             {

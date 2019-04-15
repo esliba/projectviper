@@ -50,12 +50,12 @@ namespace ProjectViper.Controllers
 
         // GET: api/QContainers?id=1
         [HttpGet]
-        public async Task<IActionResult> GetQContainer([FromQuery] int id)
+        public ActionResult<QContainerDTO> GetQContainer([FromQuery] int id)
         {
             QContainerDTO qContainer = new QContainerDTO();
             try
             {
-                qContainer = await _qContainersService.GetQContainerById(id);
+                qContainer = _qContainersService.GetQContainerById(id);
             }
             catch (CustomErrorException e)
             {
@@ -70,6 +70,31 @@ namespace ProjectViper.Controllers
                 return NotFound();
             }
             return Ok(qContainer);
+        }
+
+        // GET: api/QContainers/theme?themeId=1
+        [HttpGet]
+        [Route("theme")]
+        public ActionResult<IEnumerable<QContainerDTO>> GetQContainerByThemeId([FromQuery] int themeId)
+        {
+            IEnumerable<QContainerDTO> qContainers = new List<QContainerDTO>();
+            try
+            {
+                qContainers = _qContainersService.GetQContainersByThemeId(themeId);
+            }
+            catch (CustomErrorException e)
+            {
+                return BadRequest(new CustomMessage
+                {
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
+            }
+            if (qContainers == null)
+            {
+                return NotFound();
+            }
+            return Ok(qContainers);
         }
     }
 }

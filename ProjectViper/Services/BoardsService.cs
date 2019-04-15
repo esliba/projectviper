@@ -1,4 +1,5 @@
 ﻿using ProjectViper.DTOs;
+using ProjectViper.Exceptions;
 using ProjectViper.Models;
 using System;
 using System.Collections.Generic;
@@ -18,12 +19,40 @@ namespace ProjectViper.Services
 
         public IEnumerable<BoardDTO> GetBoards()
         {
-            return null;
+            IEnumerable<BoardDTO> boards = new List<BoardDTO>();
+            try
+            {
+                boards = _context.Board.Select(b => new BoardDTO
+                {
+                    Id = b.Id,
+                    ThemeId = b.ThemeId,
+                    Theme = b.Theme
+                });
+            }
+            catch (Exception e)
+            {
+                throw new CustomErrorException(e.Message, "There was a problem while getting the boards");
+            }
+            return boards;
         }
 
-        public async Task<BoardDTO> GetBoardById(int id)
+        public BoardDTO GetBoardById(int id)
         {
-            return null;
+            BoardDTO board = new BoardDTO();
+            try
+            {
+                board = _context.Board.Where(b => b.Id == id).Select(b => new BoardDTO
+                {
+                    Id = b.Id,
+                    ThemeId = b.ThemeId,
+                    Theme = b.Theme
+                }).SingleOrDefault();
+            }
+            catch (Exception e)
+            {
+                throw new CustomErrorException(e.Message, "There was a problem while getting the board");
+            }
+            return board;
         }
 
         public async Task<BoardDTO> CreateBoard(BoardDTO board)
