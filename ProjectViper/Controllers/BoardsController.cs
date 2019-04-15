@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using ProjectViper.DTOs;
+using ProjectViper.Exceptions;
 using ProjectViper.Models;
+using ProjectViper.Services;
 
 namespace ProjectViper.Controllers
 {
@@ -14,112 +18,102 @@ namespace ProjectViper.Controllers
     public class BoardsController : ControllerBase
     {
         private readonly ProyectoViperContext _context;
+        private readonly IConfiguration _config;
+        private BoardsService _boardsService;
 
-        public BoardsController(ProyectoViperContext context)
+        public BoardsController(IConfiguration config, ProyectoViperContext context)
         {
             _context = context;
+            _config = config;
+            _boardsService = new BoardsService(context);
         }
 
         // GET: api/Boards
         [HttpGet]
-        public IEnumerable<Board> GetBoard()
+        public ActionResult<IEnumerable<BoardDTO>> GetBoard()
         {
-            return _context.Board;
+            IEnumerable<BoardDTO> boards = new List<BoardDTO>();
+            try
+            {
+                boards = _boardsService.GetBoards();
+            }
+            catch (CustomErrorException e)
+            {
+                return BadRequest(new CustomMessage
+                {
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
+            }
+            return Ok(boards);
         }
 
-        // GET: api/Boards/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetBoard([FromRoute] int id)
+        // GET: api/Boards?id=1
+        [HttpGet]
+        public async Task<IActionResult> GetBoard([FromQuery] int id)
         {
-            if (!ModelState.IsValid)
+            BoardDTO board = new BoardDTO();
+            try
             {
-                return BadRequest(ModelState);
+                board = await _boardsService.GetBoardById(id);
             }
-
-            var board = await _context.Board.FindAsync(id);
-
+            catch (CustomErrorException e)
+            {
+                return BadRequest(new CustomMessage
+                {
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
+            }
             if (board == null)
             {
                 return NotFound();
             }
-
             return Ok(board);
-        }
-
-        // PUT: api/Boards/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutBoard([FromRoute] int id, [FromBody] Board board)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != board.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(board).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BoardExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
         }
 
         // POST: api/Boards
         [HttpPost]
-        public async Task<IActionResult> PostBoard([FromBody] Board board)
+        public async Task<IActionResult> PostBoard([FromBody] BoardDTO b)
         {
-            if (!ModelState.IsValid)
+            BoardDTO board = new BoardDTO();
+            try
             {
-                return BadRequest(ModelState);
+                board = await _boardsService.CreateBoard(b);
             }
-
-            _context.Board.Add(board);
-            await _context.SaveChangesAsync();
-
+            catch (CustomErrorException e)
+            {
+                return BadRequest(new CustomMessage
+                {
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
+            }
             return CreatedAtAction("GetBoard", new { id = board.Id }, board);
         }
 
-        // DELETE: api/Boards/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBoard([FromRoute] int id)
+        // DELETE: api/Boards?id=1
+        [HttpDelete]
+        public async Task<IActionResult> DeleteBoard([FromQuery] int id)
         {
-            if (!ModelState.IsValid)
+            BoardDTO board = new BoardDTO();
+            try
             {
-                return BadRequest(ModelState);
+                board = await _boardsService.DeleteBoard(id);
             }
-
-            var board = await _context.Board.FindAsync(id);
+            catch (CustomErrorException e)
+            {
+                return BadRequest(new CustomMessage
+                {
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
+            }
             if (board == null)
             {
                 return NotFound();
             }
-
-            _context.Board.Remove(board);
-            await _context.SaveChangesAsync();
-
             return Ok(board);
-        }
-
-        private bool BoardExists(int id)
-        {
-            return _context.Board.Any(e => e.Id == id);
         }
     }
 }

@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using ProjectViper.DTOs;
+using ProjectViper.Exceptions;
 using ProjectViper.Models;
+using ProjectViper.Services;
 
 namespace ProjectViper.Controllers
 {
@@ -14,112 +18,58 @@ namespace ProjectViper.Controllers
     public class QuestionsController : ControllerBase
     {
         private readonly ProyectoViperContext _context;
+        private readonly IConfiguration _config;
+        private QuestionsService _questionsService;
 
-        public QuestionsController(ProyectoViperContext context)
+        public QuestionsController(IConfiguration config, ProyectoViperContext context)
         {
             _context = context;
+            _config = config;
+            _questionsService = new QuestionsService(context);
         }
 
         // GET: api/Questions
         [HttpGet]
-        public IEnumerable<Question> GetQuestion()
+        public ActionResult<IEnumerable<QuestionDTO>> GetQuestion()
         {
-            return _context.Question;
-        }
-
-        // GET: api/Questions/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetQuestion([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var question = await _context.Question.FindAsync(id);
-
-            if (question == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(question);
-        }
-
-        // PUT: api/Questions/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutQuestion([FromRoute] int id, [FromBody] Question question)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != question.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(question).State = EntityState.Modified;
-
+            IEnumerable<QuestionDTO> questions = new List<QuestionDTO>();
             try
             {
-                await _context.SaveChangesAsync();
+                questions = _questionsService.GetQuestions();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (CustomErrorException e)
             {
-                if (!QuestionExists(id))
+                return BadRequest(new CustomMessage
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
             }
-
-            return NoContent();
+            return Ok(questions);
         }
 
-        // POST: api/Questions
-        [HttpPost]
-        public async Task<IActionResult> PostQuestion([FromBody] Question question)
+        // GET: api/Questions?id=1
+        [HttpGet]
+        public async Task<IActionResult> GetQuestion([FromQuery] int id)
         {
-            if (!ModelState.IsValid)
+            QuestionDTO question = new QuestionDTO();
+            try
             {
-                return BadRequest(ModelState);
+                question = await _questionsService.GetQuestionById(id);
             }
-
-            _context.Question.Add(question);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetQuestion", new { id = question.Id }, question);
-        }
-
-        // DELETE: api/Questions/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteQuestion([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
+            catch (CustomErrorException e)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new CustomMessage
+                {
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
             }
-
-            var question = await _context.Question.FindAsync(id);
             if (question == null)
             {
                 return NotFound();
             }
-
-            _context.Question.Remove(question);
-            await _context.SaveChangesAsync();
-
             return Ok(question);
-        }
-
-        private bool QuestionExists(int id)
-        {
-            return _context.Question.Any(e => e.Id == id);
         }
     }
 }

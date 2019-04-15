@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using ProjectViper.DTOs;
+using ProjectViper.Exceptions;
 using ProjectViper.Models;
+using ProjectViper.Services;
 
 namespace ProjectViper.Controllers
 {
@@ -14,112 +18,58 @@ namespace ProjectViper.Controllers
     public class QContainersController : ControllerBase
     {
         private readonly ProyectoViperContext _context;
+        private readonly IConfiguration _config;
+        private QContainersService _qContainersService;
 
-        public QContainersController(ProyectoViperContext context)
+        public QContainersController(IConfiguration config, ProyectoViperContext context)
         {
             _context = context;
+            _config = config;
+            _qContainersService = new QContainersService(context);
         }
 
         // GET: api/QContainers
         [HttpGet]
-        public IEnumerable<QContainer> GetQContainer()
+        public ActionResult<IEnumerable<QContainerDTO>> GetQContainer()
         {
-            return _context.QContainer;
-        }
-
-        // GET: api/QContainers/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetQContainer([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var qContainer = await _context.QContainer.FindAsync(id);
-
-            if (qContainer == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(qContainer);
-        }
-
-        // PUT: api/QContainers/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutQContainer([FromRoute] int id, [FromBody] QContainer qContainer)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != qContainer.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(qContainer).State = EntityState.Modified;
-
+            IEnumerable<QContainerDTO> qContainers = new List<QContainerDTO>();
             try
             {
-                await _context.SaveChangesAsync();
+                qContainers = _qContainersService.GetQContainers();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (CustomErrorException e)
             {
-                if (!QContainerExists(id))
+                return BadRequest(new CustomMessage
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
             }
-
-            return NoContent();
+            return Ok(qContainers);
         }
 
-        // POST: api/QContainers
-        [HttpPost]
-        public async Task<IActionResult> PostQContainer([FromBody] QContainer qContainer)
+        // GET: api/QContainers?id=1
+        [HttpGet]
+        public async Task<IActionResult> GetQContainer([FromQuery] int id)
         {
-            if (!ModelState.IsValid)
+            QContainerDTO qContainer = new QContainerDTO();
+            try
             {
-                return BadRequest(ModelState);
+                qContainer = await _qContainersService.GetQContainerById(id);
             }
-
-            _context.QContainer.Add(qContainer);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetQContainer", new { id = qContainer.Id }, qContainer);
-        }
-
-        // DELETE: api/QContainers/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteQContainer([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
+            catch (CustomErrorException e)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new CustomMessage
+                {
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
             }
-
-            var qContainer = await _context.QContainer.FindAsync(id);
             if (qContainer == null)
             {
                 return NotFound();
             }
-
-            _context.QContainer.Remove(qContainer);
-            await _context.SaveChangesAsync();
-
             return Ok(qContainer);
-        }
-
-        private bool QContainerExists(int id)
-        {
-            return _context.QContainer.Any(e => e.Id == id);
         }
     }
 }

@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using ProjectViper.DTOs;
+using ProjectViper.Exceptions;
 using ProjectViper.Models;
+using ProjectViper.Services;
 
 namespace ProjectViper.Controllers
 {
@@ -14,112 +18,58 @@ namespace ProjectViper.Controllers
     public class ThemesController : ControllerBase
     {
         private readonly ProyectoViperContext _context;
+        private readonly IConfiguration _config;
+        private ThemesService _themesService;
 
-        public ThemesController(ProyectoViperContext context)
+        public ThemesController(IConfiguration config, ProyectoViperContext context)
         {
             _context = context;
+            _config = config;
+            _themesService = new ThemesService(context);
         }
 
         // GET: api/Themes
         [HttpGet]
-        public IEnumerable<Theme> GetTheme()
+        public ActionResult<IEnumerable<ThemeDTO>> GetTheme()
         {
-            return _context.Theme;
-        }
-
-        // GET: api/Themes/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetTheme([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var theme = await _context.Theme.FindAsync(id);
-
-            if (theme == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(theme);
-        }
-
-        // PUT: api/Themes/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTheme([FromRoute] int id, [FromBody] Theme theme)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != theme.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(theme).State = EntityState.Modified;
-
+            IEnumerable<ThemeDTO> themes = new List<ThemeDTO>();
             try
             {
-                await _context.SaveChangesAsync();
+                themes = _themesService.GetThemes();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (CustomErrorException e)
             {
-                if (!ThemeExists(id))
+                return BadRequest(new CustomMessage
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
             }
-
-            return NoContent();
+            return Ok(themes);
         }
 
-        // POST: api/Themes
-        [HttpPost]
-        public async Task<IActionResult> PostTheme([FromBody] Theme theme)
+        // GET: api/Themes?id=1
+        [HttpGet]
+        public async Task<IActionResult> GetTheme([FromQuery] int id)
         {
-            if (!ModelState.IsValid)
+            ThemeDTO theme = new ThemeDTO();
+            try
             {
-                return BadRequest(ModelState);
+                theme = await _themesService.GetThemeById(id);
             }
-
-            _context.Theme.Add(theme);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetTheme", new { id = theme.Id }, theme);
-        }
-
-        // DELETE: api/Themes/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTheme([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
+            catch (CustomErrorException e)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new CustomMessage
+                {
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
             }
-
-            var theme = await _context.Theme.FindAsync(id);
             if (theme == null)
             {
                 return NotFound();
             }
-
-            _context.Theme.Remove(theme);
-            await _context.SaveChangesAsync();
-
             return Ok(theme);
-        }
-
-        private bool ThemeExists(int id)
-        {
-            return _context.Theme.Any(e => e.Id == id);
         }
     }
 }

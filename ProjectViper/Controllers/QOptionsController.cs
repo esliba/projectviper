@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using ProjectViper.DTOs;
+using ProjectViper.Exceptions;
 using ProjectViper.Models;
+using ProjectViper.Services;
 
 namespace ProjectViper.Controllers
 {
@@ -14,112 +18,58 @@ namespace ProjectViper.Controllers
     public class QOptionsController : ControllerBase
     {
         private readonly ProyectoViperContext _context;
+        private readonly IConfiguration _config;
+        private QOptionsService _qOptionsService;
 
-        public QOptionsController(ProyectoViperContext context)
+        public QOptionsController(IConfiguration config, ProyectoViperContext context)
         {
             _context = context;
+            _config = config;
+            _qOptionsService = new QOptionsService(context);
         }
 
         // GET: api/QOptions
         [HttpGet]
-        public IEnumerable<QOption> GetQOption()
+        public ActionResult<IEnumerable<QOptionDTO>> GetQOption()
         {
-            return _context.QOption;
-        }
-
-        // GET: api/QOptions/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetQOption([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var qOption = await _context.QOption.FindAsync(id);
-
-            if (qOption == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(qOption);
-        }
-
-        // PUT: api/QOptions/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutQOption([FromRoute] int id, [FromBody] QOption qOption)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != qOption.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(qOption).State = EntityState.Modified;
-
+            IEnumerable<QOptionDTO> qOptions = new List<QOptionDTO>();
             try
             {
-                await _context.SaveChangesAsync();
+                qOptions = _qOptionsService.GetQOptions();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (CustomErrorException e)
             {
-                if (!QOptionExists(id))
+                return BadRequest(new CustomMessage
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
             }
-
-            return NoContent();
+            return Ok(qOptions);
         }
 
-        // POST: api/QOptions
-        [HttpPost]
-        public async Task<IActionResult> PostQOption([FromBody] QOption qOption)
+        // GET: api/QOptions?id=1
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetQOption([FromQuery] int id)
         {
-            if (!ModelState.IsValid)
+            QOptionDTO qOption = new QOptionDTO();
+            try
             {
-                return BadRequest(ModelState);
+                qOption = await _qOptionsService.GetQOptionById(id);
             }
-
-            _context.QOption.Add(qOption);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetQOption", new { id = qOption.Id }, qOption);
-        }
-
-        // DELETE: api/QOptions/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteQOption([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
+            catch (CustomErrorException e)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new CustomMessage
+                {
+                    Message = e.CustomMessage,
+                    DebugError = e.Message
+                });
             }
-
-            var qOption = await _context.QOption.FindAsync(id);
             if (qOption == null)
             {
                 return NotFound();
             }
-
-            _context.QOption.Remove(qOption);
-            await _context.SaveChangesAsync();
-
             return Ok(qOption);
-        }
-
-        private bool QOptionExists(int id)
-        {
-            return _context.QOption.Any(e => e.Id == id);
         }
     }
 }
