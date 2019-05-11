@@ -1,12 +1,17 @@
 import { NgModule } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatButtonModule, MatCheckboxModule, MatSnackBarModule, MatDialogModule } from '@angular/material';
+import { MatButtonModule, MatCheckboxModule, MatSnackBarModule, MatDialogModule, 
+         MatSelectModule, MatRadioModule, MatMenuModule, MatSidenavModule,
+         MatToolbarModule, MatButtonToggleModule, MatIconModule, MatTooltipModule } from '@angular/material';
 
 @NgModule({
-  declarations: [
-  ],
-  imports: [BrowserAnimationsModule, MatButtonModule, MatCheckboxModule, MatSnackBarModule, MatDialogModule],
-  exports: [BrowserAnimationsModule, MatButtonModule, MatCheckboxModule, MatSnackBarModule, MatDialogModule],
+  declarations: [],
+  imports: [BrowserAnimationsModule, MatButtonModule, MatCheckboxModule, MatSnackBarModule, 
+            MatDialogModule, MatSelectModule, MatRadioModule, MatMenuModule, MatSidenavModule,
+            MatToolbarModule, MatButtonToggleModule, MatIconModule, MatTooltipModule],
+  exports: [BrowserAnimationsModule, MatButtonModule, MatCheckboxModule, MatSnackBarModule, 
+            MatDialogModule, MatSelectModule, MatRadioModule, MatMenuModule, MatSidenavModule,
+            MatToolbarModule, MatButtonToggleModule, MatIconModule, MatTooltipModule],
   providers: [],
   bootstrap: []
 })
